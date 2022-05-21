@@ -2,6 +2,8 @@ package Logico;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 
 public class SistemaEnrutamiento {
 	
@@ -112,6 +114,7 @@ public class SistemaEnrutamiento {
 	}
 	
 	public void ingresarEnrutamiento(Enrutamiento enrutamiento) {
+		generadorCodigoEnrutamiento++;
 		this.misEnrutamientos.add(enrutamiento);
 	}
 	
@@ -331,6 +334,48 @@ public class SistemaEnrutamiento {
 		}
 		return aux;
 		
+	}
+	
+	public Enrutamiento buscarEnrutamientoCodigo(String codigo) {
+		
+		Enrutamiento enrutamientoAux = null;
+		boolean encontrado = false;
+		int i=0;
+		while (i<misEnrutamientos.size() && !encontrado) {
+			JOptionPane.showMessageDialog(null, misEnrutamientos.get(i).getCodigoEnrutamiento()+" - "+codigo);
+			JOptionPane.showMessageDialog(null, misEnrutamientos.get(i).getCodigoEnrutamiento().equalsIgnoreCase(codigo));
+
+			if(misEnrutamientos.get(i).getCodigoEnrutamiento().equalsIgnoreCase(codigo)) {
+				encontrado = true;
+				enrutamientoAux = misEnrutamientos.get(i);
+			}
+			i++;
+			
+		}
+		
+		return enrutamientoAux;
+	
+	}
+	
+	public int buscarIndiceEnrutamiento(Enrutamiento enrutamiento) {
+		
+		int aux = 0;
+		boolean encontrado = false;
+		int i=0;
+		while (i<misEnrutamientos.size() && !encontrado) {
+			if(misEnrutamientos.get(i).getCodigoEnrutamiento().equalsIgnoreCase(enrutamiento.getCodigoEnrutamiento())) {
+				encontrado = true;
+				aux = i;
+			}
+			i++;			
+		}		
+		
+		return aux;
+	
+	}
+	
+	public void EliminarEnrutamiento(int indiceEliminar) {
+		misEnrutamientos.remove(indiceEliminar);
 	}
 	
 

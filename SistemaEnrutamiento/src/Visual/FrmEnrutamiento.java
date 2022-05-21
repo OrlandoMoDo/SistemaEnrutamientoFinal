@@ -28,6 +28,8 @@ import javax.swing.JTextField;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class FrmEnrutamiento extends JDialog {
 
@@ -55,6 +57,9 @@ public class FrmEnrutamiento extends JDialog {
 	public Interfaz interfazSeleccionada = null;
 	private JTextField txtDireccionIPRedDestinoRuta;
 	private JTextField txtMascaraRedDestinoRuta;
+	private JButton btnEliminarRuta;
+	private Enrutamiento enrutamientoEliminar;
+
 	/**
 	 * Launch the application.
 	 */
@@ -86,7 +91,7 @@ public class FrmEnrutamiento extends JDialog {
 		contentPanel.setLayout(null);
 		{
 			JPanel panel = new JPanel();
-			panel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Redes Conectadas Tabla de Enrutamiento de "+router.getNombreRouter(), TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
+			panel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Tabla de Enrutamiento de "+routerElegido.getNombreRouter(), TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
 			panel.setBounds(15, 16, 881, 202);
 			contentPanel.add(panel);
 			panel.setLayout(new BorderLayout(0, 0));
@@ -95,8 +100,24 @@ public class FrmEnrutamiento extends JDialog {
 				panel.add(scrlTablaEnrutamiento, BorderLayout.CENTER);
 				
 				tblEnrutamiento = new JTable();
+				tblEnrutamiento.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						int selectRow = tblEnrutamiento.getSelectedRow();
+						if (selectRow!=-1) {
+							enrutamientoEliminar = SistemaEnrutamiento.getInstance().buscarEnrutamientoCodigo(String.valueOf(tblEnrutamiento.getValueAt(selectRow, 8)));
+						
+						}
+						
+						if(enrutamientoEliminar!=null) {
+							btnEliminarRuta.setEnabled(true);
+						}else {
+							btnEliminarRuta.setEnabled(false);
+						}
+					}
+				});
 				modeloTabla = new DefaultTableModel();
-				String[] headers = { "Red destino", "C - R", "Int. (Conectadas)", "Protocolo", "Next Hop", "Interfaz Sal.", "Dist. Adm.", "Metrica"};
+				String[] headers = { "Red destino", "C - R", "Int. (Conectadas)", "Protocolo", "Next Hop", "Interfaz Sal.", "Dist. Adm.", "Metrica", "Enr. Cod."};
 				modeloTabla.setColumnIdentifiers(headers);//Estos seran los encabezados de las columnas.
 				tblEnrutamiento.setModel(modeloTabla);		
 
@@ -262,7 +283,7 @@ public class FrmEnrutamiento extends JDialog {
 			btnAgregarRuta.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					if(!txtDistanciaAdministrativa.getText().equalsIgnoreCase("") && !txtMetrica.getText().equalsIgnoreCase("")) {
-						Enrutamiento enrutamiento = new Enrutamiento(routerElegido.getNombreRouter(), 
+						Enrutamiento enrutamiento = new Enrutamiento((routerElegido.getNombreRouter()+"-"+SistemaEnrutamiento.getInstance().getGeneradorCodigoEnrutamiento()), 
 								SistemaEnrutamiento.getInstance().direccionIPbyIp(txtDireccionIPRedDestinoRuta.getText(), txtMascaraRedDestinoRuta.getText()),
 								SistemaEnrutamiento.getInstance().buscarDireccionIP(cbxNextHop.getSelectedItem().toString()), 
 								Integer.parseInt(txtDistanciaAdministrativa.getText()), Integer.parseInt(txtMetrica.getText()), 
@@ -333,7 +354,15 @@ public class FrmEnrutamiento extends JDialog {
 			btnCalcularMejorRuta = new JButton("Calcular");
 			btnCalcularMejorRuta.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					calcularMejorRuta();
+
+					if(!txtRedDestinoCalculo.getText().equalsIgnoreCase("")) {
+						ArrayList<Enrutamiento> enrutamientosDireccion = SistemaEnrutamiento.getInstance().rutasDireccion(txtRedDestinoCalculo.getText());
+						if(enrutamientosDireccion.size()!=0) {
+							calcularMejorRuta();
+						}else {
+							JOptionPane.showMessageDialog(null, "No se puede calcular la mejor ruta");
+						}
+					}
 				}
 			});
 			btnCalcularMejorRuta.setBounds(44, 97, 115, 29);
@@ -390,6 +419,22 @@ public class FrmEnrutamiento extends JDialog {
 				}
 			});
 			buttonPane.add(btnAgregarRutaMenu);
+			
+			btnEliminarRuta = new JButton("Eliminar Ruta");
+			btnEliminarRuta.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					
+					int indiceEliminar = SistemaEnrutamiento.getInstance().buscarIndiceEnrutamiento(enrutamientoEliminar);
+					SistemaEnrutamiento.getInstance().EliminarEnrutamiento(indiceEliminar);
+					int indiceEliminarRouter = routerElegido.buscarIndiceEnrutamiento(enrutamientoEliminar);
+					routerElegido.EliminarEnrutamiento(indiceEliminarRouter);
+					JOptionPane.showMessageDialog(null, "Se elimino correctamente");
+					btnEliminarRuta.setEnabled(false);
+					cargarTabla(2);
+				}
+			});
+			btnEliminarRuta.setEnabled(false);
+			buttonPane.add(btnEliminarRuta);
 			{
 				btnSalir = new JButton("Salir");
 				btnSalir.setActionCommand("Cancel");
@@ -432,6 +477,7 @@ public class FrmEnrutamiento extends JDialog {
 				row[5] = "NA";
 				row[6] = "NA";
 				row[7] = "0";
+				row[8] = "NA";
 				modeloTabla.addRow(row);
 
 		}
@@ -445,6 +491,7 @@ public class FrmEnrutamiento extends JDialog {
 				row[5] = routerElegido.getEnrutamientos().get(i).getInterfazSalida().getNombreInterfaz();
 				row[6] = routerElegido.getEnrutamientos().get(i).getDistanciaAdministrativa();
 				row[7] = routerElegido.getEnrutamientos().get(i).getMetrica();
+				row[8] = routerElegido.getEnrutamientos().get(i).getCodigoEnrutamiento();
 				modeloTabla.addRow(row);
 
 			}
@@ -518,6 +565,4 @@ public class FrmEnrutamiento extends JDialog {
 		txtRutaMejorCamino.setText(mejorRuta);
 		
 }
-	
-	
 }

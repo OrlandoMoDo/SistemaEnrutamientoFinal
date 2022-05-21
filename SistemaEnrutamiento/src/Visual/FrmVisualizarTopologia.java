@@ -47,9 +47,6 @@ public class FrmVisualizarTopologia extends JDialog {
 	private JLabel lblGatewayF_2;
 	private JLabel lblGatewayG_2;
 
-	/**
-	 * Launch the application.
-	 */
 	public static void main(String[] args) {
 		try {
 			FrmVisualizarTopologia dialog = new FrmVisualizarTopologia();

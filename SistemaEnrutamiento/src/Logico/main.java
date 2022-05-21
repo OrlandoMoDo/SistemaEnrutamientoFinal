@@ -35,6 +35,18 @@ public class main {
 //		}
 //        System.out.println((direccion.obtenerIP()));
 //        System.out.println(SistemaEnrutamiento.getInstance().direccionIPSintaxisValida(direccion.obtenerIP()));
+		
+		ArrayList<String> nombres = new ArrayList<String>();
+		nombres.add("Juan");
+		nombres.add("Pedro");
+		nombres.add("Marcos");
+		nombres.add("Antonio");
+		nombres.add("Oscar");
+		nombres.remove(1);
+		for (int i = 0; i <nombres.size(); i++) {
+			System.out.println((i+1)+nombres.get(i));
+		}
+		
 		for (int i = 0; i <7; i++) {
 			System.out.print("Ingresa la red no. "+(i+1)+": ");
 			String red = entradaEscaner.next();

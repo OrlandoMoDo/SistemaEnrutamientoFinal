@@ -101,5 +101,27 @@ public class Router {
 		
 	}
 	
+	public int buscarIndiceEnrutamiento(Enrutamiento enrutamiento) {
+		
+		int aux = 0;
+		boolean encontrado = false;
+		int i=0;
+		while (i<enrutamientos.size() && !encontrado) {
+			if(enrutamientos.get(i).getCodigoEnrutamiento().equalsIgnoreCase(enrutamiento.getCodigoEnrutamiento())) {
+				encontrado = true;
+				aux = i;
+			}
+			i++;			
+		}		
+		
+		return aux;
+	
+	}
+	
+	public void EliminarEnrutamiento(int indiceEliminar) {
+		enrutamientos.remove(indiceEliminar);
+	}
+	
+	
 
 }
